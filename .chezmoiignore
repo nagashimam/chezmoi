@@ -1,0 +1,6 @@
+{{ if not .terminal_browser_skill_dir }}
+.agents/skills/terminal-browser
+{{ end }}
+
+tmp.*
+_*

@@ -1,0 +1,44 @@
+# ~/.config/ghostty/config
+# Phase 1-A: minimal MVP config. No chezmoi templating logic is used in this
+# file today (no real macOS/WSL2 difference was found that Ghostty needs) —
+# see NOTES.md for why it still ships as .tmpl.
+
+# --- Font ---------------------------------------------------------------
+# HackGen Console: Hack + 源柔ゴシックの合成フォント。日本語グリフを含み、
+# 記号類を半角幅に寄せているため端末でのカラム崩れが起きにくい
+# (yuru7/HackGen README で確認、要 `brew install --cask font-hackgen`)。
+font-family = HackGen Console
+font-size = 14
+
+# --- Theme ----------------------------------------------------------------
+# "catppuccin-mocha" is a commonly bundled Ghostty theme name, but this was
+# NOT verified against a live `ghostty +list-themes` output in this session.
+# Confirm it exists on your install before relying on it; see NOTES.md.
+# theme = catppuccin-mocha
+
+# --- Window -----------------------------------------------------------------
+window-padding-x = 8
+window-padding-y = 8
+confirm-close-surface = false
+
+# --- Behavior -----------------------------------------------------------
+mouse-hide-while-typing = true
+scrollback-limit = 100000
+
+# --- JIS keyboard: ¥ key fix ------------------------------------------------
+# Ghostty defines a distinct physical key `intl_yen` for the dedicated ¥ key
+# found on JIS keyboards (sits between `=` and Backspace) — confirmed against
+# ghostty-org/ghostty's src/input/key.zig. It is its own physical key, not an
+# Option/Alt-modified combination, so no alt+ prefix is needed here. This
+# corrects the earlier draft plan, which had `alt+intl_yen=text:\\`.
+#
+# `text:` uses Zig string-literal escaping, so `\\` sends one literal
+# backslash character.
+keybind = intl_yen=text:\\
+
+# --- Kitty Graphics Protocol ---------------------------------------------
+# No config key was found to "enable" KGP — Ghostty implements it natively
+# and it is on by default, nothing to set here.
+
+env = LANG=ja_JP.UTF-8
+env = LC_ALL=ja_JP.UTF-8

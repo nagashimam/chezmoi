@@ -5,6 +5,21 @@
 {{-   end -}}
 {{- end -}}
 
+{{- $is_mac := eq .chezmoi.os "darwin" -}}
+
+{{- $skill := "" -}}
+{{- if $is_mac -}}
+{{-   $bin := lookPath "terminal-browser" -}}
+{{-   if $bin -}}
+{{/* 実行ファイルのリンクを解決し、インストール先からスキルのパスを求める */}}
+{{-     $real := output "realpath" $bin | trim -}}
+{{-     $skill = joinPath (dir (dir $real)) "skills" "default" "terminal-browser" -}}
+{{-   end -}}
+{{- else if $is_wsl -}}
+{{-   $skill = "" -}}
+{{- end }}
+
 [data]
+    terminal_browser_skill_dir = {{ $skill | quote }}
     is_wsl = {{ $is_wsl }}
-    is_mac = {{ eq .chezmoi.os "darwin" }}
+    is_mac = {{ $is_mac }}

@@ -1,0 +1,73 @@
+# herdr basic UI config — Phase 1-C (pane management / UI only)
+#
+# AI-agent integration (`herdr integration install claude`, agent status
+# badges tied to Claude Code) is intentionally NOT configured here — that is
+# Phase 2 and depends on the Claude Code CLI setup being finalized first.
+#
+# Browsh / lazygit pane-launch shortcuts from the original draft are also
+# intentionally omitted — those tools were deferred until actually needed.
+#
+# Config path: ~/.config/herdr/config.toml
+# View all defaults at any time with: herdr --default-config
+# Apply changes without restarting: herdr server reload-config
+
+[keys]
+prefix = "ctrl+t"
+reload_config = "prefix+c"
+
+# panes (sub prefix: shift)
+split_vertical = "prefix+shift+right"
+split_horizontal = "prefix+shift+down"
+close_pane = "prefix+shift+x"
+rename_pane = "prefix+shift+r"
+focus_pane_left = "prefix+shift+h"
+focus_pane_down = "prefix+shift+j"
+focus_pane_up = "prefix+shift+k"
+focus_pane_right = "prefix+shift+l"
+
+# workspace (sub prefix: ctrl)
+workspace_picker = "prefix+ctrl+o"
+switch_workspace = "prefix+ctrl+1..9"
+new_workspace = "prefix+ctrl+n"
+rename_workspace = "prefix+ctrl+r"
+close_workspace = "prefix+ctrl+x"
+previous_workspace = "prefix+ctrl+["
+next_workspace = "prefix+ctrl+]"
+
+# workspace (sub prefix: alt/opt)
+new_worktree = "prefix+alt+n"
+open_worktree = "prefix+alt+o"
+remove_worktree = "prefix+alt+x"
+
+# tab (sub prefix: ctrl+shift)
+new_tab = "prefix+ctrl+shift+n"
+rename_tab = "prefix+ctrl+shift+r"
+previous_tab = "prefix+ctrl+shift+["
+next_tab = "prefix+ctrl+shift+]"
+close_tab = "prefix+ctrl+shift+x"
+switch_tab = "prefix+1..9"
+
+[theme]
+name = "catppuccin"
+# auto_switch / dark_name / light_name exist (auto light/dark theme
+# switching) but are left unset here: UNVERIFIED which built-in theme
+# names herdr ships besides "catppuccin" (the documented default), so a
+# specific light-variant name isn't guessed. Confirm the theme catalog
+# with `herdr --default-config` or the docs before adding these:
+# auto_switch = true
+# dark_name = "catppuccin"
+# light_name = "<pick a real light theme name>"
+
+[ui]
+mouse_capture = true
+sidebar_width = 26
+sidebar_min_width = 18
+sidebar_max_width = 36
+sidebar_start_collapsed = false
+
+[ui.toast]
+# Valid values per docs: "herdr", "terminal", "system", "off"
+delivery = "system"
+
+[session]
+resume_agents_on_restore = true
