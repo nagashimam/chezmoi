@@ -1,3 +1,4 @@
+onboarding = false
 # herdr basic UI config — Phase 1-C (pane management / UI only)
 #
 # AI-agent integration (`herdr integration install claude`, agent status
@@ -12,7 +13,7 @@
 # Apply changes without restarting: herdr server reload-config
 
 [keys]
-prefix = "ctrl+t"
+prefix = "ctrl+;"
 reload_config = "prefix+c"
 
 # panes (sub prefix: shift)
@@ -48,7 +49,7 @@ close_tab = "prefix+ctrl+shift+x"
 switch_tab = "prefix+1..9"
 
 [theme]
-name = "catppuccin"
+name = "tokyo-night"
 # auto_switch / dark_name / light_name exist (auto light/dark theme
 # switching) but are left unset here: UNVERIFIED which built-in theme
 # names herdr ships besides "catppuccin" (the documented default), so a
@@ -71,3 +72,6 @@ delivery = "system"
 
 [session]
 resume_agents_on_restore = true
+
+[experimental]
+kitty_graphics = true

@@ -11,19 +11,22 @@ font-family = HackGen Console
 font-size = 14
 
 # --- Theme ----------------------------------------------------------------
-# "catppuccin-mocha" is a commonly bundled Ghostty theme name, but this was
-# NOT verified against a live `ghostty +list-themes` output in this session.
-# Confirm it exists on your install before relying on it; see NOTES.md.
-# theme = catppuccin-mocha
+theme = TokyoNight Night
 
 # --- Window -----------------------------------------------------------------
+background-opacity = 0.80
+# Apply the same opacity to explicit cell backgrounds, including Neovim.
+background-opacity-cells = true
+background-blur = false
 window-padding-x = 8
 window-padding-y = 8
 confirm-close-surface = false
+window-vsync = true
 
 # --- Behavior -----------------------------------------------------------
 mouse-hide-while-typing = true
-scrollback-limit = 100000
+mouse-scroll-multiplier = 1
+scrollback-limit = 10000000
 
 # --- JIS keyboard: ¥ key fix ------------------------------------------------
 # Ghostty defines a distinct physical key `intl_yen` for the dedicated ¥ key
