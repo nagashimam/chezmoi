@@ -1,0 +1,38 @@
+{{- $cfg := include "shared-agent-config.json" | fromJson -}}
+{
+  "model": "sonnet",
+  "hooks": {
+    "SessionStart": [{"matcher":"^(startup|resume|clear|compact|fork)$","hooks":[{"type":"command","command":"bash '/Users/masato.nagashima/.claude/hooks/herdr-agent-state.sh' session","timeout":10}]}]
+  },
+  "enabledPlugins": {
+    "browser-use@claude-plugins-official": true
+  },
+  "effortLevel": "xhigh",
+  "theme": "dark",
+  "switchModelsOnFlag": false,
+  "allowedDomains": {{ $cfg.safeDomains | toJson }},
+  "permissions": {
+    "allow": [
+      {{- range $i, $cmd := $cfg.safeCommands }}
+      {{ printf "Bash(%s:*)" $cmd | quote }},
+      {{ printf "Bash(%s)" $cmd | quote }},
+      {{- end }}
+      {{- range $i, $domain := $cfg.safeDomains }}
+      {{- if $i }},{{ end }}
+      {{ printf "WebFetch(%s:*)" $domain | quote }},
+      {{ printf "WebFetch(%s)" $domain | quote }}
+      {{- end }}
+    ]
+  },
+  "allowedTools": [
+    {{- range $i, $cmd := $cfg.safeCommands }}
+    {{ printf "Bash(%s:*)" $cmd | quote }},
+    {{ printf "Bash(%s)" $cmd | quote }},
+    {{- end }}
+    {{- range $i, $domain := $cfg.safeDomains }}
+    {{- if $i }},{{ end }}
+    {{ printf "WebFetch(%s:*)" $domain | quote }},
+    {{ printf "WebFetch(%s)" $domain | quote }}
+    {{- end }}
+  ]
+}

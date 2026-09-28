@@ -1,7 +1,11 @@
+{{- $cfg := include "shared-agent-config.json" | fromJson -}}
 model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
+
+[tools.web_search]
+allowed_domains = {{ $cfg.safeDomains | toJson }}
 
 [projects."/Users/masato.nagashima/.local/share/chezmoi"]
 trust_level = "trusted"

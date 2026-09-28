@@ -32,7 +32,6 @@ _*
 .codex/log
 .codex/models_cache.json
 .codex/plugins
-.codex/rules/default.rules
 .codex/session_index.jsonl
 .codex/sessions
 .codex/shell_snapshots
