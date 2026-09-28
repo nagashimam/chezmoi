@@ -22,8 +22,22 @@ vim.filetype.add({
   },
 })
 
--- WSL2: route the unnamed register through win32yank so yank/paste round-trips to the Windows clipboard
-if vim.fn.has("wsl") == 1 then
+-- macOS: share yank/paste with the system clipboard using the native tools.
+if vim.fn.has("mac") == 1 then
+  vim.g.clipboard = {
+    name = "macOS clipboard",
+    copy = {
+      ["+"] = "pbcopy",
+      ["*"] = "pbcopy",
+    },
+    paste = {
+      ["+"] = "pbpaste",
+      ["*"] = "pbpaste",
+    },
+    cache_enabled = 0,
+  }
+-- WSL2: share yank/paste with the Windows clipboard.
+elseif vim.fn.has("wsl") == 1 then
   vim.g.clipboard = {
     name = "win32yank-wsl",
     copy = {
@@ -49,6 +63,9 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins")
+
+-- Load navigation keymaps ([[ back, ]] forward, ] jumps)
+require("navigation")
 
 -- Phase 2: send visually-selected code to the adjacent herdr agent pane.
 -- Not a lazy.nvim plugin spec, so it's required directly rather than placed
