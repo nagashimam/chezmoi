@@ -1,0 +1,23 @@
+{
+  "model": "claude-fable-5[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/masato.nagashima/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "browser-use@claude-plugins-official": true
+  },
+  "effortLevel": "xhigh",
+  "theme": "dark",
+  "switchModelsOnFlag": false
+}

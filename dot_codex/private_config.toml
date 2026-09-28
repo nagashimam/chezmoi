@@ -1,0 +1,22 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "xhigh"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[projects."/Users/masato.nagashima/.local/share/chezmoi"]
+trust_level = "trusted"
+
+[projects."/Users/masato.nagashima/dev/snkrdunk-en"]
+trust_level = "trusted"
+
+[tui.model_availability_nux]
+gpt-6-astra = 4
+
+[features]
+hooks = true
+
+[hooks.state]
+
+[hooks.state."/Users/masato.nagashima/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:0dd9cf5887bd10741a7ef421e0d2711d236315096ebd5e151d0e8638e144279e"
+enabled = true

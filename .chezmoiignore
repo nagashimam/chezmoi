@@ -5,3 +5,42 @@
 tmp.*
 _*
 .gemini/antigravity-cli
+
+# Claude Code runtime data
+.claude/.last-cleanup
+.claude/backups
+.claude/cache
+.claude/chrome
+.claude/file-history
+.claude/history.jsonl
+.claude/mcp-needs-auth-cache.json
+.claude/paste-cache
+.claude/plugins
+.claude/projects
+.claude/session-env
+.claude/sessions
+.claude/shell-snapshots
+.claude/telemetry
+
+# Codex credentials, runtime data, and installed components
+.codex/.sandbox_migration
+.codex/.tmp
+.codex/auth.json
+.codex/cache
+.codex/history.jsonl
+.codex/installation_id
+.codex/log
+.codex/models_cache.json
+.codex/plugins
+.codex/rules/default.rules
+.codex/session_index.jsonl
+.codex/sessions
+.codex/shell_snapshots
+.codex/skills/.system
+.codex/*.sqlite*
+.codex/thread-writer-locks
+.codex/tmp
+.codex/version.json
+
+# Repository verification helpers are not managed dotfiles.
+tests/**

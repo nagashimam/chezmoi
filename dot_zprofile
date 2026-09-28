@@ -1,0 +1,5 @@
+# Homebrew supplies interactive tools and completion functions.  Load the
+# shared setup in login shells; .zshrc repeats this for non-login shells.
+if [[ -r ${XDG_CONFIG_HOME:-$HOME/.config}/zsh/homebrew.zsh ]]; then
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/homebrew.zsh"
+fi

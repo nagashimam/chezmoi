@@ -1,0 +1,7 @@
+# Keep the mandatory Zsh entry point minimal; the configuration lives together
+# with the other Zsh files under ~/.config/zsh.
+zsh_config_dir=${XDG_CONFIG_HOME:-$HOME/.config}/zsh
+if [[ -r ${zsh_config_dir}/zshenv.zsh ]]; then
+  source "${zsh_config_dir}/zshenv.zsh"
+fi
+unset zsh_config_dir
