@@ -17,6 +17,8 @@ Neovim側では `<leader>f` (Find) および `<leader>g` (Git) をプレフィ�
 | `<leader>fb` | **バッファ一覧** | **F**ind **B**uffers | 開いているファイルの切り替え |
 | `<leader>fr` | **最近開いたファイル** | **F**ind **R**ecent files | 直近の作業ファイル一覧 |
 | `<leader>gb` | **Gitブランチ検索** | **G**it **B**ranches | ブランチ一覧と切り替え (checkout) |
+| `<leader>gg` | **Lazygit 起動** | **G**it **G**ui (lazygit) | ターミナル Lazygit をフロート表示 |
+| `<leader>fe` | **ファイルエクスプローラー** | **F**ile **E**xplorer | snacks.explorer でファイルツリー表示 |
 
 ### Zsh側 (シェル)
 - **インサートモード (viins)**:
@@ -29,16 +31,15 @@ Neovim側では `<leader>f` (Find) および `<leader>g` (Git) をプレフィ�
 
 ---
 
-## 3. プラグイン非依存の抽象化 (選定を保留できる理由)
+## 3. 採用プラグイン: `folke/snacks.nvim`
 
-現代の主要な3つのファジーファインダー (`fzf-lua`, `snacks.picker`, `telescope.nvim`) はすべて同等のインターフェースを備えており、キーバインド設計に影響を与えずに後から選択・差し替えが可能。
+プラグインごとの設定肥大化や重複を防ぎ、Neovimの周辺機能（ピッカー、エクスプローラー、通知、インデントガイド等）を統一エコシステムで管理するため、**`snacks.nvim`** を採用。
 
-| 対象 | `fzf-lua` | `snacks.picker` | `telescope.builtin` |
-| :--- | :--- | :--- | :--- |
-| ファイル | `require("fzf-lua").files()` | `Snacks.picker.files()` | `require("telescope.builtin").find_files()` |
-| 全文検索 | `require("fzf-lua").live_grep()` | `Snacks.picker.grep()` | `require("telescope.builtin").live_grep()` |
-| バッファ | `require("fzf-lua").buffers()` | `Snacks.picker.buffers()` | `require("telescope.builtin").buffers()` |
-| 最近のファイル | `require("fzf-lua").oldfiles()` | `Snacks.picker.recent()` | `require("telescope.builtin").oldfiles()` |
-| Gitブランチ | `require("fzf-lua").git_branches()` | `Snacks.picker.git_branches()` | `require("telescope.builtin").git_branches()` |
+- **`Snacks.picker.files()`**: ファイル検索 (`<leader>ff`)
+- **`Snacks.picker.grep()`**: Live Grep (`<leader>fg`)
+- **`Snacks.picker.buffers()`**: バッファ切り替え (`<leader>fb`)
+- **`Snacks.picker.recent()`**: 最近のファイル (`<leader>fr`)
+- **`Snacks.picker.git_branches()`**: Gitブランチ切り替え (`<leader>gb`)
+- **`Snacks.lazygit()`**: Lazygit起動 (`<leader>gg`)
+- **`Snacks.explorer()`**: ファイルエクスプローラー (`<leader>fe`)
 
-※プラグイン自体の選定は、UI/モーダル、通知機能、ファイルエクスプローラーなど、Neovim全体の周辺ツール構成の検討と合わせて決定する。
