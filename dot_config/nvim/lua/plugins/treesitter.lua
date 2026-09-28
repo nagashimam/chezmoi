@@ -3,6 +3,9 @@ return {
     "nvim-treesitter/nvim-treesitter",
     lazy = false,
     build = ":TSUpdate",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+    },
     config = function()
       local ts = require("nvim-treesitter")
 
@@ -43,6 +46,25 @@ return {
           vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
         end,
       })
+
+      -- navigation.md に準拠した構造ジャンプ (nvim-treesitter-textobjects)
+      local ok, ts_configs = pcall(require, "nvim-treesitter.configs")
+      if ok then
+        ts_configs.setup({
+          textobjects = {
+            move = {
+              enable = true,
+              set_jumps = true, -- jumplist に記録して [[ で戻れるようにする
+              goto_next_start = {
+                ["]f"] = { query = "@function.outer", desc = "Jump to Next Function" },
+                ["]a"] = { query = "@parameter.inner", desc = "Jump to Next Parameter/Argument" },
+                ["]k"] = { query = "@block.outer", desc = "Jump to Next Block/Scope" },
+                ["]T"] = { query = "@tag.outer", desc = "Jump to Next HTML/Vue Tag" },
+              },
+            },
+          },
+        })
+      end
     end,
   },
 }
