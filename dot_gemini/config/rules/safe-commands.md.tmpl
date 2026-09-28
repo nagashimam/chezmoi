@@ -1,0 +1,16 @@
+{{- $cfg := include "shared-agent-config.json" | fromJson -}}
+# Auto-Approved Safe Commands and Domains
+
+## Safe Commands
+The following commands and subcommands are verified safe (read-only and non-mutating) and can be executed directly without requiring user confirmation:
+
+{{- range $cmd := $cfg.safeCommands }}
+- `{{ $cmd }}`
+{{- end }}
+
+## Safe Domains
+The following domains are verified safe and pre-approved for web reading, search, and HTTP GET access (`read_url_content`, `search_web`, `curl`):
+
+{{- range $domain := $cfg.safeDomains }}
+- `{{ $domain }}`
+{{- end }}

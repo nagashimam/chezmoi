@@ -1,0 +1,5 @@
+{{- $cfg := include "shared-agent-config.json" | fromJson -}}
+# Auto-generated safe command rules from shared-agent-config.json
+{{- range $cmd := $cfg.safeCommands }}
+prefix_rule(pattern={{ regexSplit "\\s+" $cmd -1 | toJson }}, decision="allow")
+{{- end }}

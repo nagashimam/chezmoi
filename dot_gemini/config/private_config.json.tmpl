@@ -1,0 +1,8 @@
+{{- $cfg := include "shared-agent-config.json" | fromJson -}}
+{
+  "userSettings": {
+    "remoteControlHostname": "macbook-pro-local-galactic-shard",
+    "allowedCommands": {{ $cfg.safeCommands | toJson }},
+    "allowedDomains": {{ $cfg.safeDomains | toJson }}
+  }
+}
