@@ -1,10 +1,14 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
-    event = { "BufReadPost", "BufNewFile" },
-    opts = {
-      ensure_installed = {
+    config = function()
+      local ts = require("nvim-treesitter")
+
+      ts.setup()
+
+      local parsers = {
         "vue",
         "typescript",
         "javascript",
@@ -13,7 +17,6 @@ return {
         "css",
         "scss",
         "json",
-        "jsonc",
         "lua",
         "luadoc",
         "vim",
@@ -22,17 +25,24 @@ return {
         "go",
         "markdown",
         "markdown_inline",
-      },
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false,
-      },
-      indent = {
-        enable = true,
-      },
-    },
-    config = function(_, opts)
-      require("nvim-treesitter.configs").setup(opts)
+      }
+
+      local installed = ts.get_installed()
+      local to_install = vim.tbl_filter(function(p)
+        return not vim.tbl_contains(installed, p)
+      end, parsers)
+
+      if #to_install > 0 then
+        ts.install(to_install)
+      end
+
+      -- Neovim 0.12 標準の Treesitter ハイライト & インデント設定
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function(args)
+          pcall(vim.treesitter.start, args.buf)
+          vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
     end,
   },
 }

@@ -44,3 +44,6 @@ _*
 
 # Repository verification helpers are not managed dotfiles.
 tests/**
+
+# Nvim plugin lock file 
+.config/nvim/lazy-lock.json

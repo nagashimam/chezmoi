@@ -48,6 +48,11 @@ next_tab = "prefix+ctrl+shift+]"
 close_tab = "prefix+ctrl+shift+x"
 switch_tab = "prefix+1..9"
 
+# agents (sub prefix: alt+shift)
+previous_agent = "prefix+alt+shift+["
+next_agent = "prefix+alt+shift+]"
+focus_agent = "prefix+alt+shift+1..9"
+
 [theme]
 name = "tokyo-night"
 # auto_switch / dark_name / light_name exist (auto light/dark theme
