@@ -13,6 +13,7 @@ return {
             "cssls",
             "gopls",
             "lua_ls",
+            "eslint",
           },
         },
       },
@@ -80,6 +81,9 @@ return {
           },
         },
       })
+
+      -- ESLint LSP
+      vim.lsp.config("eslint", {})
 
       -- Keymaps and Format on Save on LspAttach
       vim.api.nvim_create_autocmd("LspAttach", {
