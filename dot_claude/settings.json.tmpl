@@ -19,8 +19,7 @@
       {{- end }}
       {{- range $i, $domain := $cfg.safeDomains }}
       {{- if $i }},{{ end }}
-      {{ printf "WebFetch(%s:*)" $domain | quote }},
-      {{ printf "WebFetch(%s)" $domain | quote }}
+      {{ printf "WebFetch(domain:%s)" $domain | quote }}
       {{- end }}
     ]
   },
@@ -31,8 +30,7 @@
     {{- end }}
     {{- range $i, $domain := $cfg.safeDomains }}
     {{- if $i }},{{ end }}
-    {{ printf "WebFetch(%s:*)" $domain | quote }},
-    {{ printf "WebFetch(%s)" $domain | quote }}
+    {{ printf "WebFetch(domain:%s)" $domain | quote }}
     {{- end }}
   ]
 }
