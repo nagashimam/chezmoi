@@ -53,6 +53,16 @@ previous_agent = "prefix+alt+shift+["
 next_agent = "prefix+alt+shift+]"
 focus_agent = "prefix+alt+shift+1..9"
 
+[[keys.command]]
+key = "prefix+shift+left"
+type = "shell"
+command = "bash ~/.config/herdr/herdr-split-left.sh"
+
+[[keys.command]]
+key = "prefix+shift+up"
+type = "shell"
+command = "bash ~/.config/herdr/herdr-split-up.sh"
+
 [theme]
 name = "tokyo-night"
 # auto_switch / dark_name / light_name exist (auto light/dark theme
