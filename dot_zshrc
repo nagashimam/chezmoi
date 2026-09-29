@@ -5,3 +5,11 @@ if [[ -r ${zsh_config_dir}/zshrc.zsh ]]; then
   source "${zsh_config_dir}/zshrc.zsh"
 fi
 unset zsh_config_dir
+
+# pnpm
+export PNPM_HOME='/Users/masato.nagashima/Library/pnpm'
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
