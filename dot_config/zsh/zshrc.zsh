@@ -56,6 +56,7 @@ unsetopt COMPLETE_ALIASES
 alias ga='git add'
 alias gs='git status'
 alias nr='npm run'
+alias nv='nvim'
 
 if (( $+commands[mise] )); then
   eval "$(mise activate zsh)"
