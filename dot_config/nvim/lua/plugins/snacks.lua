@@ -8,6 +8,8 @@ return {
       -- ここではまずピッカー (Fuzzy Finder) と基本機能を有効化
       picker = {
         enabled = true,
+        auto_close = true,
+        jump = { close = true },
         sources = {
           explorer = {
             auto_close = true,
