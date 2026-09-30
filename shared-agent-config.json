@@ -60,6 +60,8 @@
     "git rev-parse",
     "git show",
     "git status",
+    "go test",
+    "go fmt",
     "grep",
     "head",
     "herdr --default-config",
