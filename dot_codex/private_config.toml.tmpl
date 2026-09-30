@@ -16,6 +16,12 @@ trust_level = "trusted"
 [projects."/Users/masato.nagashima/dev"]
 trust_level = "trusted"
 
+[projects."/Users/masato.nagashima/dev/vue-html-bridge"]
+trust_level = "trusted"
+
+[tui]
+screen_reader_detection_done = true
+
 [tui.model_availability_nux]
 gpt-6-astra = 4
 
@@ -30,3 +36,7 @@ enabled = true
 
 [apps.connector_5f3c8c41a1e54ad7a76272c89e2554fa.tools."google_drive.fetch"]
 approval_mode = "approve"
+
+[mcp_servers.aws-mcp]
+command = "uvx"
+args = ["mcp-proxy-for-aws@latest", "https://aws-mcp.us-east-1.api.aws/mcp", "--metadata", "INSTALL_SOURCE=aws-cli"]
