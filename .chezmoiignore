@@ -1,7 +1,3 @@
-{{ if not .terminal_browser_skill_dir }}
-.agents/skills/terminal-browser
-{{ end }}
-
 tmp.*
 _*
 .gemini/antigravity-cli
@@ -40,6 +36,12 @@ _*
 .codex/thread-writer-locks
 .codex/tmp
 .codex/version.json
+
+# Agent skills managed externally (e.g. terminal-browser)
+.agents/skills/terminal-browser
+.claude/skills/terminal-browser
+.codex/skills/terminal-browser
+.gemini/config/skills/terminal-browser
 
 # Repository verification helpers are not managed dotfiles.
 tests/**
