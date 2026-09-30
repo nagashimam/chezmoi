@@ -1,8 +1,16 @@
 {{- $cfg := include "shared-agent-config.json" | fromJson -}}
+{{- $allows := list -}}
+{{- range $cmd := $cfg.safeCommands -}}
+  {{- $allows = append $allows (printf "command(%s)" $cmd) -}}
+{{- end -}}
+{{- range $domain := $cfg.safeDomains -}}
+  {{- $allows = append $allows (printf "read_url(%s)" $domain) -}}
+{{- end -}}
 {
   "userSettings": {
     "remoteControlHostname": "macbook-pro-local-galactic-shard",
-    "allowedCommands": {{ $cfg.safeCommands | toJson }},
-    "allowedDomains": {{ $cfg.safeDomains | toJson }}
+    "globalPermissionGrants": {
+      "allow": {{ $allows | toJson }}
+    }
   }
 }
