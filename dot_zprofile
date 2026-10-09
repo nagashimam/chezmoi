@@ -3,3 +3,4 @@
 if [[ -r ${XDG_CONFIG_HOME:-$HOME/.config}/zsh/homebrew.zsh ]]; then
   source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/homebrew.zsh"
 fi
+export PATH="$PATH:/Users/masato.nagashima/.docker/bin"
