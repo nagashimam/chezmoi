@@ -17,6 +17,8 @@ Neovim 0.11+ のネイティブ LSP 機構 (`vim.lsp.config` / `vim.lsp.enable`)
 | **CSS / SCSS** | `cssls` | `<style>` タグや `.css` ファイル内の補完・検証 | 採用 |
 | **Go** | `gopls` | Go言語公式LSP。補完、定義ジャンプ、import 自動管理 | 採用 |
 | **Linter / Formatter** | `eslint` (または `biome`) | LSP 経由での lint エラー検出および自動フォーマット | 採用 |
+| **JSON** | `jsonls` | JSON スキーマ検証およびコード整形 | 採用 |
+| **Markdown** | `marksman` | 見出し補完、ドキュメント間リンク・参照解決 | 採用 |
 
 ---
 

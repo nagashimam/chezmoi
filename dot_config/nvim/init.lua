@@ -8,6 +8,8 @@ opt.tabstop = 2
 opt.shiftwidth = 2
 opt.expandtab = true
 opt.clipboard = "unnamedplus"
+opt.ignorecase = true
+opt.smartcase = true
 
 -- chezmoi source files keep their real extension before .tmpl (e.g. config.toml.tmpl).
 -- Detect filetype from the inner extension so toml/json/etc. keep their own syntax;

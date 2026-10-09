@@ -14,6 +14,8 @@ return {
             "gopls",
             "lua_ls",
             "eslint",
+            "jsonls",
+            "marksman",
           },
         },
       },
@@ -84,6 +86,12 @@ return {
 
       -- ESLint LSP
       vim.lsp.config("eslint", {})
+
+      -- JSON LSP
+      vim.lsp.config("jsonls", {})
+
+      -- Markdown LSP
+      vim.lsp.config("marksman", {})
 
       -- Keymaps and Format on Save on LspAttach
       vim.api.nvim_create_autocmd("LspAttach", {
