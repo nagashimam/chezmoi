@@ -93,6 +93,21 @@ return {
       -- Markdown LSP
       vim.lsp.config("marksman", {})
 
+      -- Markdown formatter and linter
+      vim.lsp.config("rumdl", {
+        cmd = { "rumdl", "server" },
+        filetypes = { "markdown" },
+        root_markers = { ".git", ".rumdl.toml", "rumdl.toml" },
+        init_options = {
+          enableLinkCompletions = false,
+          enableLinkNavigation = false,
+          enableSymbols = false,
+        },
+      })
+      if vim.fn.executable("rumdl") == 1 then
+        vim.lsp.enable("rumdl")
+      end
+
       -- Keymaps and Format on Save on LspAttach
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
@@ -109,12 +124,22 @@ return {
 
           -- Manual Format
           map("<leader>lf", function()
-            vim.lsp.buf.format({ timeout_ms = 1000 })
+            vim.lsp.buf.format({
+              timeout_ms = 1000,
+              filter = function(client)
+                return client.name == "rumdl"
+              end,
+            })
           end, "Format Buffer")
 
           -- Format & Save
           map("<leader>ls", function()
-            vim.lsp.buf.format({ timeout_ms = 1000 })
+            vim.lsp.buf.format({
+              timeout_ms = 1000,
+              filter = function(client)
+                return client.name == "rumdl"
+              end,
+            })
             vim.cmd.write()
           end, "Format & Save")
 
@@ -122,9 +147,16 @@ return {
           vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function()
+              if vim.bo[bufnr].filetype ~= "markdown"
+                or #vim.lsp.get_clients({ bufnr = bufnr, name = "rumdl" }) == 0 then
+                return
+              end
               vim.lsp.buf.format({
                 bufnr = bufnr,
                 timeout_ms = 1000,
+                filter = function(client)
+                  return client.name == "rumdl"
+                end,
               })
             end,
           })
