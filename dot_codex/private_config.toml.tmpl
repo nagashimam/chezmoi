@@ -1,5 +1,5 @@
 {{- $cfg := include "shared-agent-config.json" | fromJson -}}
-model = "gpt-5.6-terra"
+model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
@@ -19,11 +19,15 @@ trust_level = "trusted"
 [projects."/Users/masato.nagashima/dev/vue-html-bridge"]
 trust_level = "trusted"
 
+[projects."/Users/masato.nagashima/dev/snkrdunk-terraform"]
+trust_level = "trusted"
+
 [tui]
 screen_reader_detection_done = true
 
 [tui.model_availability_nux]
 gpt-6-astra = 4
+"gpt-6.1-sol" = 4
 
 [features]
 hooks = true
