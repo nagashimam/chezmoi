@@ -18,6 +18,16 @@
       "skillFolderHash": "76a98a285cb0434f3d39e1a873823556330e398b",
       "installedAt": "2026-09-11T05:22:50.965Z",
       "updatedAt": "2026-09-11T05:22:50.965Z"
+    },
+    "gws-sheets": {
+      "source": "googleworkspace/cli",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/googleworkspace/cli.git",
+      "ref": "main",
+      "skillPath": "skills/gws-sheets/SKILL.md",
+      "skillFolderHash": "50758ea65d12833e48361aa541c0acaff0d96f67",
+      "installedAt": "2026-10-13T08:09:32.389Z",
+      "updatedAt": "2026-10-13T08:09:32.389Z"
     }
   },
   "dismissed": {
@@ -35,6 +45,7 @@
     "kimi-code-cli",
     "opencode",
     "warp",
-    "zed"
+    "zed",
+    "claude-code"
   ]
 }
