@@ -1,0 +1,75 @@
+#!/bin/bash
+set -euo pipefail
+
+# ~/.agents/skills 配下のスキルの内容変更・追加・削除を検知するためのハッシュ
+# hash: {{ output "sh" "-c" "find ~/.agents/skills -mindepth 1 -maxdepth 2 -type f -name 'SKILL.md' 2>/dev/null | sort | xargs shasum 2>/dev/null | shasum | awk '{print $1}'" | trim }}
+
+AGENTS_SKILLS_DIR="${HOME}/.agents/skills"
+TARGET_SKILL_DIRS=(
+  "${HOME}/.claude/skills"
+  "${HOME}/.gemini/config/skills"
+)
+
+if [[ ! -d "${AGENTS_SKILLS_DIR}" ]]; then
+  exit 0
+fi
+
+sync_skills_to_target() {
+  local target_dir="$1"
+  mkdir -p "${target_dir}"
+
+  for skill_dir in "${AGENTS_SKILLS_DIR}"/*/; do
+    [[ -d "${skill_dir}" ]] || continue
+    [[ -f "${skill_dir}SKILL.md" ]] || continue
+
+    local skill_name
+    skill_name="$(basename "${skill_dir}")"
+
+    # terminal-browser などの外部管理スキルはスキップ
+    [[ "${skill_name}" == "terminal-browser" ]] && continue
+
+    local dest_link="${target_dir}/${skill_name}"
+
+    # 既にディレクトリとして存在し、シンボリックリンクでない場合は保護のためスキップ
+    if [[ -d "${dest_link}" && ! -L "${dest_link}" ]]; then
+      continue
+    fi
+
+    # 既存のリンク先と同じなら何もしない
+    if [[ -L "${dest_link}" ]]; then
+      local current_target
+      current_target="$(readlink "${dest_link}" || true)"
+      if [[ "${current_target}" == "${skill_dir%/}" || "${current_target}" == *"/.agents/skills/${skill_name}" ]]; then
+        continue
+      fi
+    fi
+
+    ln -sfn "${skill_dir%/}" "${dest_link}"
+    echo "Linked skill: ${skill_name} -> ${dest_link}"
+  done
+
+  # クリーンアップ: ターゲット内のシンボリックリンクで、~/.agents/skills を指しているが元が存在しなくなったものを削除
+  for dest_item in "${target_dir}"/*; do
+    [[ -L "${dest_item}" ]] || continue
+    local item_name
+    item_name="$(basename "${dest_item}")"
+    [[ "${item_name}" == "terminal-browser" ]] && continue
+
+    local link_target
+    link_target="$(readlink "${dest_item}" || true)"
+
+    if [[ "${link_target}" == *"/.agents/skills/"* || "${link_target}" == *".agents/skills/"* ]]; then
+      if [[ ! -e "${dest_item}" || ! -d "${AGENTS_SKILLS_DIR}/${item_name}" ]]; then
+        echo "Removing orphaned skill link: ${dest_item}"
+        rm -f "${dest_item}"
+      fi
+    fi
+  done
+}
+
+for target_dir in "${TARGET_SKILL_DIRS[@]}"; do
+  parent_dir="$(dirname "${target_dir}")"
+  if [[ -d "${parent_dir}" ]]; then
+    sync_skills_to_target "${target_dir}"
+  fi
+done
