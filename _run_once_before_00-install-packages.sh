@@ -35,6 +35,10 @@ casks=(
 "${brew_bin}" install --formula "${formulae[@]}"
 "${brew_bin}" install --cask "${casks[@]}"
 
+brew tap datadog-labs/pack
+brew install datadog-labs/pack/pup
+brew install googleworkspace-cli
+
 mise use -g node@lts
 mise exec -- npm i -g skills
 mise exec -- npx skills add herdrdev/herdr --skill herdr -g
