@@ -6,9 +6,9 @@ optional tools are absent.
 
 ## File layout
 
-- `zshenv.zsh` is sourced by `~/.zshenv`. It only adds mise shims to `path`.
-  It must remain safe for every Zsh invocation: no external commands, output,
-  prompt setup, or interactive-only options.
+- `zshenv.zsh` is sourced by `~/.zshenv`. It only adds `~/.local/bin` and mise
+  shims to `path`. It must remain safe for every Zsh invocation: no external
+  commands, output, prompt setup, or interactive-only options.
 - `homebrew.zsh` is sourced by `~/.zprofile` and interactive shells. It finds
   a valid Homebrew prefix, initializes its environment only when needed, and
   adds its completion directory to `fpath`.

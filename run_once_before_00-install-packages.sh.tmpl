@@ -2,10 +2,7 @@
 
 set -euo pipefail
 
-if [ "$(uname -s)" != "Darwin" ]; then
-  exit 0
-fi
-
+{{ if eq .chezmoi.os "darwin" -}}
 if ! command -v brew >/dev/null 2>&1; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   if [ -x /opt/homebrew/bin/brew ]; then
@@ -46,3 +43,51 @@ mise exec -- npx skills add herdrdev/herdr --skill herdr -g
 herdr integration install codex
 herdr integration install claude
 herdr integration install antigravity-cli
+{{ else if eq .chezmoi.os "linux" -}}
+if ! command -v apt-get >/dev/null 2>&1; then
+  exit 0
+fi
+
+export DEBIAN_FRONTEND=noninteractive
+
+sudo apt-get update
+
+apt_packages=(
+  curl git unzip
+  neovim wget zoxide fzf fd-find docker.io
+  zsh-autosuggestions zsh-syntax-highlighting shellcheck
+  graphviz
+)
+sudo apt-get install -y "${apt_packages[@]}"
+
+mkdir -p "$HOME/.local/bin"
+if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
+  ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
+fi
+
+if ! command -v mise >/dev/null 2>&1; then
+  curl https://mise.run | sh
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+mise use -g \
+  node@lts \
+  gh \
+  lazygit \
+  lazysql \
+  awscli \
+  starship
+
+mise exec -- npm i -g \
+  skills \
+  @openai/codex \
+  @anthropic-ai/claude-code
+
+mise exec -- npx skills add herdrdev/herdr --skill herdr -g
+
+if command -v herdr >/dev/null 2>&1; then
+  herdr integration install codex
+  herdr integration install claude
+  herdr integration install antigravity-cli
+fi
+{{ end -}}

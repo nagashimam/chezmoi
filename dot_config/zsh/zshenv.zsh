@@ -3,6 +3,10 @@
 # zsh processes that need a stable executable path.
 typeset -U path
 
+if [[ -d $HOME/.local/bin ]]; then
+  path=("$HOME/.local/bin" $path)
+fi
+
 mise_data_dir=${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}
 mise_shims_dir="${mise_data_dir}/shims"
 if [[ -d ${mise_shims_dir} ]]; then
