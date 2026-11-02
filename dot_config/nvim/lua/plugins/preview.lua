@@ -4,7 +4,8 @@ return {
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     ft = { "markdown" },
     build = function()
-      vim.fn["mkdp#util#install"]()
+      require("lazy").load({ plugins = { "markdown-preview.nvim" } })
+      vim.fn["mkdp#util#install_sync"]()
     end,
     init = function()
       -- Enable rendering UML diagrams (PlantUML) in markdown previews
