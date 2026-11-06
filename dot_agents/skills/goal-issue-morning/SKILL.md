@@ -15,6 +15,10 @@ description: 毎朝の勤務開始時に、今期の3つのゴールissue(sub-is
   - `state.json`: `{ "<issue|pr>#N": { title, state, labels, assignees, updated_at, fetched_at, summary, goal, parent, ...(PR: draft, reviewDecision, checks) } }`
   - `blockers.json`: 下記スキーマ
 - 「自分」= `gh api user -q .login` のログイン名。
+- **PR承認ルール(マージに必要な人間レビュアーの承認)**:
+  - `#6187` 配下のタスク/PR: **`daisukeueta` と `yassuzu` の両名** の Approve が必須。
+  - それ以外のタスク/PR: **`daisukeueta`** の Approve が必須。
+  - **Botの除外**: Bot(例: `github-actions[bot]`, `coderabbitai[bot]`, `copilot` 等)によるレビュー・Approve は承認要件としてカウントしない。BotのApproveのみでマージを提案してはならない。
 
 ## 優先順位の原則
 
@@ -29,7 +33,7 @@ description: 毎朝の勤務開始時に、今期の3つのゴールissue(sub-is
 
 - `gh api graphql` で階層ごとにBFSする。1クエリで全階層をネストすると `MAX_NODE_LIMIT_EXCEEDED`(50万ノード)で失敗するため、1階層ずつ、20 issueを alias(`i123: issue(number:123){...}`)で1クエリにまとめる。ヘッダ `GraphQL-Features: sub_issues` を付ける。issueごとに `gh issue view` を回さない。取得項目: number, title, state, labels, assignees, updatedAt, `subIssues(first:100){totalCount pageInfo{hasNextPage} nodes{number}}`。`hasNextPage` が true なら続きを取る。
 - 紐づくPRは `closedByPullRequestsReferences` だけでは「閉じる」関係しか拾えない。`timelineItems(itemTypes:[CONNECTED_EVENT,CROSS_REFERENCED_EVENT])` も併用してPR参照を拾う。
-- 各PRについて state, isDraft, reviewDecision, statusCheckRollup, reviewRequests, updatedAt を取る。
+- 各PRについて state, isDraft, reviewDecision, statusCheckRollup, reviewRequests, updatedAt, および最新レビュアー・承認状態(`latestOpinionatedReviews` または `reviews` の `author.login` と `state`)を取る。BotのApproveと人間のApproveを区別できるようにする。
 - PRのcloseとissueのcloseは連動すると仮定しない。
 - 各子孫がどのゴール・親に属するかを保持する。
 - 取得失敗(未認証、レート制限、権限不足)は黙って続行せず、レポート冒頭で「取得できなかった範囲」を明示する。
@@ -45,6 +49,13 @@ description: 毎朝の勤務開始時に、今期の3つのゴールissue(sub-is
 ### 3. 判定
 
 - active `needs-human` ごとに: 必要な人間の判断/アクション、待っている人/もの、ブロックしている親・ゴール、待つ間にエージェントが安全にできる準備作業。
+- **PRのマージ判定 & アクション提案**:
+  - BotのApproveだけではマージ可能と判断しない。
+  - マージを提案できる条件: open かつ non-draft、CIパス(statusCheckRollupが成功)、changes requestedなし、かつ**必須レビュアー全員のApprove完了**。
+    - `#6187` 配下: `daisukeueta` と `yassuzu` の両方が APPROVED。
+    - それ以外のゴール配下: `daisukeueta` が APPROVED。
+  - 上記条件を満たした場合のみ「PRのマージ」を次のアクションとして提案する。
+  - 承認が不足している場合: マージを提案せず、「〇〇へレビュー依頼」「〇〇のレビュー待ち(必要に応じ催促)」として提案する。
 - ラベルが古い/曖昧/根拠なしの場合は、変更せず不確かさを報告する(目安: 14日以上更新がなく文脈上の依頼が無い)。
 
 ### 4. レポート(日本語、全体で約40行以内)
@@ -52,8 +63,8 @@ description: 毎朝の勤務開始時に、今期の3つのゴールissue(sub-is
 先頭に、取得失敗があればその旨。次にゴールごと(3つ)に:
 - 全体状態(進捗 closed/total)と前回からの意味のある変化
 - active blocker(子孫のIDを含む)
-- 関連PRの状態
-- 次のアクション
+- 関連PRの状態(必須レビュアーの承認状況を含む)
+- 次のアクション(承認要件を満たしたPRのマージ、未承認PRのレビュー依頼/待ち、CI修正、着手可能タスク等)
 
 変化のないチケットは個別に列挙せず「変更なし(N件)」にまとめる。最後に、**最初にやるべきことを1つ**、理由つきで示す。`needs-human` が無ければその旨と、次の着手可能タスクを示す。
 
