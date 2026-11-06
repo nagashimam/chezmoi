@@ -9,7 +9,13 @@ return {
       styles = {
         sidebars = "transparent",
         floats = "transparent",
+        comments = { italic = false },
       },
+      on_highlights = function(hl, c)
+        -- コントラストを高めたコメント色（デフォルト: #565f89 -> #899bb5）
+        hl.Comment = { fg = "#899bb5", italic = false }
+        hl["@comment"] = { fg = "#899bb5", italic = false }
+      end,
     },
     config = function(_, opts)
       require("tokyonight").setup(opts)
