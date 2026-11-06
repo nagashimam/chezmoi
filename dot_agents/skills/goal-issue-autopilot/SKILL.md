@@ -1,6 +1,6 @@
 ---
 name: goal-issue-autopilot
-description: Use only when the user explicitly asks to advance goal work autonomously (e.g. "autopilot", "ゴールissueを自動で進めて", "着手可能なものを進めて"). Delegates independent, unblocked leaf tickets from the three quarterly goal issues to worktree-isolated subagents that each produce a draft PR, while avoiding duplicate or already-running work.
+description: Use only when the user explicitly asks to advance goal work autonomously (e.g. "autopilot", "ゴールissueを自動で進めて", "着手可能なものを進めて"). Delegates independent, unblocked leaf tickets from the three quarterly goal issues to worktree-isolated subagents that execute agent-team-workflow to produce a draft PR, while avoiding duplicate or already-running work.
 ---
 
 # Goal issue autonomous work
@@ -39,13 +39,21 @@ Never store credentials or tokens in these files. If `$CACHE` is unavailable or 
 
 5. **Claim**, then launch. Create the claim (see above) with `expires_at` = now + 3h, then spawn one subagent per ticket with `isolation: "worktree"` and `run_in_background`. Never claim a `needs-human` ticket.
 
-6. **Subagent brief** (keep it short; use `state.json` summaries rather than pasting full threads). Include: issue number/title/body summary, parent path and goal, acceptance criteria, linked PR state, and these rules:
+6. **Agent Team Workflow execution & Subagent brief.**
+   Each subagent acts as an orchestrator executing the **`agent-team-workflow`** skill in its isolated worktree to implement the ticket and produce a draft PR.
+   Brief include: issue number/title/body summary, parent path and goal, acceptance criteria, linked PR state, and these rules:
    - Work only inside the assigned worktree, on branch `feat/<N>`, based on the repo default branch.
-   - Before coding, run `gh issue develop <N> --name feat/<N>` (or, if the branch already exists, confirm it is linked) so the branch appears under the issue's **Development**. Then implement.
-   - Done means: acceptance criteria met and the repo's lint, type-check and relevant tests pass locally. Do not claim completion otherwise.
-   - Push `feat/<N>` and open a **draft** PR (`gh pr create --draft`) referencing the issue. After creating it, verify the issue's Development shows the branch/PR (e.g. `linkedBranches` via GraphQL); if not, report that.
-   - Allowed: read/write code in the worktree, run local checks, push `feat/<N>`, create the draft PR. Forbidden: force-push, touching other branches, merging, marking the PR ready for review, adding dependencies or changing infra/DB/secrets/CI config unless the ticket requires it, and any change to GitHub state, labels, comments, assignees, or reviews on anything other than the assigned issue and its own PR.
-   - Touch `$CACHE/claims/<N>/heartbeat` at each major step (after setup, after implementation, after checks, after PR creation).
+   - Before coding, run `gh issue develop <N> --name feat/<N>` (or, if the branch already exists, confirm it is linked) so the branch appears under the issue's **Development**.
+   - Execute the 5 phases of `agent-team-workflow` (Collect, Analyze, Define, Architect, Implement) using Herdr with Claude Code, Codex, and Antigravity CLI according to their roles:
+     - **Step 1 (Collect)**: Gather ticket requirements, acceptance criteria, and linked issue/spec context (`task-background.md`). Verified by Antigravity CLI.
+     - **Step 2 (Analyze)**: Formalize requirements into Given-When-Then specifications in `PRD.md` by Antigravity CLI. Reviewed by Codex (`--approve-for-me`).
+     - **Step 3 (Define)**: Formulate automated/agentic/manual test specifications by Claude Code. Reviewed by Codex.
+     - **Step 4 (Architect)**: Produce detailed design covering ISO/IEC 25010 quality characteristics in `system-design.md` by Claude Code. Reviewed by Codex.
+     - **Step 5 (Implement & QA)**: Production and test code implementation by Claude Code. QA test execution (including dev server lifecycle & browser checks) by Antigravity CLI. Rigorous code/evidence review by Codex.
+   - Done means: all applicable steps of `agent-team-workflow` pass (`STATUS: PASS`), acceptance criteria are met, and the repo's lint, type-check, and relevant tests pass locally. Do not claim completion otherwise.
+   - Push `feat/<N>` and open a **draft** PR (`gh pr create --draft`) referencing the issue with the summary and design/test results from `agent-team-workflow`. After creating it, verify the issue's Development shows the branch/PR (e.g. `linkedBranches` via GraphQL); if not, report that.
+   - Allowed: read/write code in the worktree, run local checks, spawn agents in Herdr for the workflow, push `feat/<N>`, create the draft PR. Forbidden: force-push, touching other branches, merging, marking the PR ready for review, adding dependencies or changing infra/DB/secrets/CI config unless the ticket requires it, and any change to GitHub state, labels, comments, assignees, or reviews on anything other than the assigned issue and its own PR.
+   - Touch `$CACHE/claims/<N>/heartbeat` at each phase transition / major step (after claim, after each workflow phase PASS, after checks, after PR creation).
    - Final report in 10 lines or fewer: PR URL, changed files, verification run and results, new blockers. If a `needs-human` decision is required, stop dependent work and say exactly what decision is needed.
 
 7. **Track.** While subagents run, update `meta.json` (`state`, `expires_at`, PR URL) on each completion notification. Do not poll in short intervals. A claim from a run that has ended is not cleared just because this invocation ends; it persists until its work completes or the recovery rules below release it.
