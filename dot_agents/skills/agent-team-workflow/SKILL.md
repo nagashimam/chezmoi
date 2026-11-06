@@ -18,7 +18,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
 
 ## ツールと操作の範囲
 
-- Herdr、Claude Code (`claude`)、Codex (`codex --approve-for-me`)、Antigravity CLI (`agy --sandbox` 起動後に Herdr で `shift+tab` を2回送信して auto モード化) は、利用可能で認証済みの場合に限り使用します。
+- Herdr、Claude Code (`claude --permission-mode auto`)、Codex (`codex --approve-for-me`)、Antigravity CLI (`agy --sandbox` 起動後に Herdr で `shift+tab` を2回送信して auto モード化) は、利用可能で認証済みの場合に限り使用します。
 - GitHub、Notion、Slack、Google Drive等の外部ソースは、依頼に含まれるもの、またはタスクに必要でアクセス権があるものだけ参照します。アクセスできない情報を推測で補いません。
 - コマンドは、対象リポジトリ内で必要な読み取り、編集、ビルド、テストに限ります。テスト用ローカルサーバーはQAに必要な場合のみ起動し、終了後に停止します。
 - 本番環境への変更、外部ユーザーへの連絡、データの削除、履歴を書き換えるGit操作（force push等）は実行しません。
@@ -92,9 +92,10 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
          herdr agent send-keys <agent-name> shift+tab
          ```
      - **Claude Code (`claude`)**:
+       - 意図せず `accept edits on` などのモードで起動するのを防ぎ、完全自律実行させるため、起動時に必ず `--permission-mode auto` を指定して auto モードで起動します。
        - 起動コマンド例:
          ```bash
-         herdr agent start <agent-name> --kind claude --pane <pane-id>
+         herdr agent start <agent-name> --kind claude --pane <pane-id> -- --permission-mode auto
          ```
    - ステップ完了（PASS）時に該当ステップのペインをクローズし、メモリ・トークン消費とコンテキスト肥大化を防止します（成果物はファイル経由で引き継がれます）。
 6. **Gitブランチ運用**:
@@ -109,7 +110,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
 - **入力**: スキル引数に示された自然言語による情報ソース（GitHub, Notion, Slack, Google Drive, カレントディレクトリ内のメモファイル等）。
 - **外部アクセス前提とエラー時対応**:
   - 指定ソースごとに「必須」または「任意」を記録します。任意ソースにアクセスできない場合は、未取得として記録して続行します。必須ソースにアクセスできず、他の情報から安全に代替できない場合は、Step 1を保留して人間に報告します。
-- **作業者 (Claude Code)**:
+- **作業者 (Claude Code - `--permission-mode auto` 指定)**:
   1. 指定された各ソースからタスクに関連する情報を取得します。
   2. 保存が許可されている場合に限り、レビューに必要な最小限のデータを `sources/` に保存します。機密性の高い生データは保存せず、必要な抜粋は機密情報を除去またはマスキングします。
   3. `task-background.md` に背景情報をまとめ、どの情報をどのソースから取得したかを **IEEE Reference Style** で明記します。非公開のローカルファイルを参照する場合はPR上で閲覧できない旨を記載し、公開可能な根拠の要約も添えます。
@@ -140,7 +141,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
     - 固定スクリプト化が難しく、LLMやビジョンモデルが画面の文脈・レイアウト・自然言語応答を解釈しながら試行錯誤・探索的に操作・視覚検証する必要があるもの（非構造的UIの探索、デザイン崩れ・レイアウト崩れの視覚確認、LLM出力の文脈判定など）。
   - **3. 人間による手動確認 (最終手段)** ➔ `manual-tests.md`:
     - 人間による実機確認、決済連携、外部組織との協調、法的・運用的な目視確認など。
-- **作業者 (Claude Code)**:
+- **作業者 (Claude Code - `--permission-mode auto` 指定)**:
   - PRDの全要件（Given-When-Then）を上記優先度（1 > 2 > 3）で分類し、テスト仕様書（ID, 対応PRD要件ID, 入力, 期待値, 実行手順/コマンド案）を策定します。
 - **レビュワー (Codex - `--approve-for-me` 付与)**:
   - PRDの全要件がいずれかのテストでカバーされているか（網羅性）を確認します。
@@ -149,7 +150,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
 
 ### Step 4: Architect (システム詳細設計)
 - **入力**: `PRD.md`, `automated-tests.md`, `agentic-tests.md`, `manual-tests.md`
-- **作業者 (Claude Code)**:
+- **作業者 (Claude Code - `--permission-mode auto` 指定)**:
   1. 既存コードベースのアーキテクチャ・命名規則・ディレクトリ構造を探索した上で、要件およびテスト仕様を満たす詳細設計を `system-design.md` にまとめます（アーキテクチャ図、データモデル/スキーマ、API/インターフェース設計、コンポーネント構成）。
   2. **ISO/IEC 25010 の8品質特性対応表** を設け、変更に関係する特性への設計上の対策を記載します。関係しない特性は「該当なし(N/A)」と根拠を簡潔に記載します。小規模な変更では表を簡略化できますが、セキュリティや信頼性など影響が見込まれる項目は評価を省略しません。
      - 機能適合性 (Functional Suitability)
@@ -167,7 +168,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
 
 ### Step 5: Implement (実装・QA・最終監査)
 - **入力**: `system-design.md`, `automated-tests.md`, `agentic-tests.md`, `manual-tests.md`
-- **作業者 (Claude Code)**:
+- **作業者 (Claude Code - `--permission-mode auto` 指定)**:
   - 設計および自動テスト仕様に基づき、プロダクションコードおよび自動テストコード（ユニット/結合/E2Eスクリプト）を実装します。
 - **QA (Antigravity CLI - `agy --sandbox` 起動後に `shift+tab` × 2 で auto 化) — テスト環境ライフサイクル管理**:
   1. **サーバー起動とヘルスチェック**: WebアプリやAPIのテストが必要な場合、QAエージェント自身がバックグラウンドプロセスでローカル開発サーバー（例: `npm run dev`）を立ち上げ、疎通確認（HTTP 200等のヘルスチェック）を確認します。
