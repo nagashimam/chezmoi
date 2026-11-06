@@ -18,7 +18,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
 
 ## ツールと操作の範囲
 
-- Herdr、Claude Code (`claude`)、Codex (`codex`)、Antigravity CLI (`agy`) は、利用可能で認証済みの場合に限り使用します。
+- Herdr、Claude Code (`claude`)、Codex (`codex --approve-for-me`)、Antigravity CLI (`agy --sandbox` 起動後に Herdr で `shift+tab` を2回送信して auto モード化) は、利用可能で認証済みの場合に限り使用します。
 - GitHub、Notion、Slack、Google Drive等の外部ソースは、依頼に含まれるもの、またはタスクに必要でアクセス権があるものだけ参照します。アクセスできない情報を推測で補いません。
 - コマンドは、対象リポジトリ内で必要な読み取り、編集、ビルド、テストに限ります。テスト用ローカルサーバーはQAに必要な場合のみ起動し、終了後に停止します。
 - 本番環境への変更、外部ユーザーへの連絡、データの削除、履歴を書き換えるGit操作（force push等）は実行しません。
@@ -70,9 +70,32 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
    - PRやコミット対象の文書に、非公開ソースの本文、個人情報、認証情報を転載しません。必要な根拠は、公開可能な要約と取得日時、参照先で示します。
    - `task-background.md` から非公開のローカルファイルをリンクする場合は、リンク先がPR上で閲覧できないことを明記し、レビューに必要な根拠を公開可能な要約として記載します。
    - 機密情報が混入した可能性を排除できない場合は、ステージング・コミット・pushを保留し、人間に報告します。
-5. **Herdrペイン・リソース管理**:
+5. **Herdrペイン・リソース管理とエージェント起動コマンド**:
    - タスク開始時に専用タブを1つ作成します。
    - ステップごとに必要なペインを分割（`herdr pane split`）して該当エージェントを起動（`herdr agent start`）します。
+   - **エージェント起動オプションと初期化手順**:
+     - **Codex (`codex`)**:
+       - 自動承認で自律実行させるため、起動時に必ず `--approve-for-me` オプションを付与します。
+       - 起動コマンド例:
+         ```bash
+         herdr agent start <agent-name> --kind codex --pane <pane-id> -- --approve-for-me
+         ```
+     - **Antigravity CLI (`agy`)**:
+       - `agy --sandbox --mode=auto` は環境によって機能しない場合があるため、`--sandbox` で起動後に Herdr で `shift+tab` を2回送信して `auto` モードに切り替えます（現行バージョンでは2回送信で auto モードになります）。
+       - 起動およびモード切替コマンド例:
+         ```bash
+         # 1. sandbox モードで起動
+         herdr agent start <agent-name> --kind agy --pane <pane-id> -- --sandbox
+
+         # 2. 起動後、shift+tab を2回送信して auto モードへ変更
+         herdr agent send-keys <agent-name> shift+tab
+         herdr agent send-keys <agent-name> shift+tab
+         ```
+     - **Claude Code (`claude`)**:
+       - 起動コマンド例:
+         ```bash
+         herdr agent start <agent-name> --kind claude --pane <pane-id>
+         ```
    - ステップ完了（PASS）時に該当ステップのペインをクローズし、メモリ・トークン消費とコンテキスト肥大化を防止します（成果物はファイル経由で引き継がれます）。
 6. **Gitブランチ運用**:
    - タスク開始時に専用のフィーチャーブランチ（`feature/<task-name>`）を自動作成します。
@@ -90,20 +113,20 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
   1. 指定された各ソースからタスクに関連する情報を取得します。
   2. 保存が許可されている場合に限り、レビューに必要な最小限のデータを `sources/` に保存します。機密性の高い生データは保存せず、必要な抜粋は機密情報を除去またはマスキングします。
   3. `task-background.md` に背景情報をまとめ、どの情報をどのソースから取得したかを **IEEE Reference Style** で明記します。非公開のローカルファイルを参照する場合はPR上で閲覧できない旨を記載し、公開可能な根拠の要約も添えます。
-- **レビュワー (Antigravity CLI)**:
+- **レビュワー (Antigravity CLI - `agy --sandbox` 起動後に `shift+tab` × 2 で auto 化)**:
   - `task-background.md` のIEEE引用と、参照可能な元ソースまたは `sources/` 内の保存可能なデータを突合します。保存されていないソースはアクセス可能な範囲で確認します。
   - 元ソースとの矛盾や、ソースが存在しないハルシネーションがないかを精査します。
   - `review-step1.md` に `STATUS: PASS` または `STATUS: FAIL` と検証結果を出力します。ハルシネーションや矛盾が見つかった場合は作業者に差し戻します。
 
 ### Step 2: Analyze (要件定義)
 - **入力**: `task-background.md`
-- **作業者 (Antigravity CLI)**:
+- **作業者 (Antigravity CLI - `agy --sandbox` 起動後に `shift+tab` × 2 で auto 化)**:
   1. 高度なNLP能力を活かして `task-background.md` を要求仕様にまとめ、`PRD.md` を作成します。
   2. 機能要件および測定可能な非機能要件（性能・セキュリティ・可用性等）を半形式手法的に **Given... When... Then...** 形式で網羅的にリスト化します。
   3. 「前提条件・制約・スコープ外」セクションを独立して明記します。
   4. 背景情報に矛盾があった場合、最も合理的に整合すると思われる形に統合し、「矛盾点」「統合結果」「判断根拠」を記録する専用セクションを設けます。
   5. 根本的に相反するビジネス要求がありAIの推論のみで解決できない場合は、「要人間判断（Pending Human Decision）」として明記し、無理な仮定を置かないようにします。
-- **レビュワー (Codex)**:
+- **レビュワー (Codex - `--approve-for-me` 付与)**:
   - Codexの論理的厳密性を活かし、`task-background.md` と `PRD.md` 間の抜け漏れ・齟齬を精査します。
   - Given-When-Thenの境界条件や前提の漏れを検証します。
   - **矛盾解決の合否基準**: レビュワー自身の主観的好みで合否を判定するのではなく、「矛盾点・統合結果・判断根拠が論理的に筋が通っているか」を判定基準とします。論理的破綻がある場合は `STATUS: FAIL`、論理的に整合していれば `STATUS: PASS` とします。解決不能な重大事項が「要人間判断」として提起されている場合、Codexは `STATUS: BLOCKED` と理由をレビューに記録します。`BLOCKED` はPASS/FAILとは別の状態とし、該当要件に依存する作業を保留します。独立した作業は続行できます。
@@ -119,7 +142,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
     - 人間による実機確認、決済連携、外部組織との協調、法的・運用的な目視確認など。
 - **作業者 (Claude Code)**:
   - PRDの全要件（Given-When-Then）を上記優先度（1 > 2 > 3）で分類し、テスト仕様書（ID, 対応PRD要件ID, 入力, 期待値, 実行手順/コマンド案）を策定します。
-- **レビュワー (Codex)**:
+- **レビュワー (Codex - `--approve-for-me` 付与)**:
   - PRDの全要件がいずれかのテストでカバーされているか（網羅性）を確認します。
   - 自動テスト（スクリプト化）可能なものがエージェントテストや手動テストに割り振られていないか（優先度ルールの厳守）を精査します。
   - 記載の手順で客観的にテスト可能かを検証し、`review-step3.md` を作成します。
@@ -137,7 +160,7 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
      - セキュリティ (Security)
      - 保守性 (Maintainability)
      - 移植性 (Portability)
-- **レビュワー (Codex)**:
+- **レビュワー (Codex - `--approve-for-me` 付与)**:
   - 設計が必要十分であり、PRDおよび各テスト仕様を漏れなくカバーしているかを確認します。
   - 過剰設計（YAGNI違反）や設計不足、既存コード規約との著しい不整合がないかを精査します。
   - 8つの品質特性観点で設計上のリスクや抜け漏れ、未考慮事項がないかを厳格に精査し、`review-step4.md` を作成します。
@@ -146,14 +169,14 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
 - **入力**: `system-design.md`, `automated-tests.md`, `agentic-tests.md`, `manual-tests.md`
 - **作業者 (Claude Code)**:
   - 設計および自動テスト仕様に基づき、プロダクションコードおよび自動テストコード（ユニット/結合/E2Eスクリプト）を実装します。
-- **QA (Antigravity CLI) — テスト環境ライフサイクル管理**:
+- **QA (Antigravity CLI - `agy --sandbox` 起動後に `shift+tab` × 2 で auto 化) — テスト環境ライフサイクル管理**:
   1. **サーバー起動とヘルスチェック**: WebアプリやAPIのテストが必要な場合、QAエージェント自身がバックグラウンドプロセスでローカル開発サーバー（例: `npm run dev`）を立ち上げ、疎通確認（HTTP 200等のヘルスチェック）を確認します。
   2. **テスト実行**:
      - `automated-tests.md` に基づく自動テストコマンドを実行し、エビデンス（実行ログ、終了コード）を取得します。
      - `agentic-tests.md` に基づく操作手順を実走します（特にGoogle Chromeや `terminal-browser` を用いた自律的UI/視覚シナリオ操作を行い、ログやキャプチャを取得）。
   3. **サーバー停止**: テスト実走完了後、起動したローカルサーバープロセスを確実にクリーンアップ・停止します。
   4. **レポート出力**: テスト結果を `qa-report-step5.md` にまとめます。未達テストがある場合は `STATUS: FAIL` として作業者に差し戻します。全テストが成功した場合は `STATUS: PASS` とします。手動確認が残る場合は、未実施項目と実施主体を明記します。結果を信頼できる形で取得できない場合はPASSにせず、理由を記録して納品を保留します。
-- **レビュワー (Codex)**:
+- **レビュワー (Codex - `--approve-for-me` 付与)**:
   - QAがすべてPASSした後、`qa-report-step5.md` のエビデンスの妥当性（テストの形骸化、モックによる偽陽性、アサーションの抜けがないか）を厳格に監査します。
   - 実装コードの差分（`git diff`）を精査し、設計との適合性、コード品質、セキュリティ面をレビューし `review-step5.md` を作成します。
   - **差し戻しルール**: レビューでFAILとなった場合、作業者に修正させ、**修正後は必ず再度QA（Antigravity CLI）によるテスト実走を通してエビデンスを更新してから再レビュー**を行います。
