@@ -1,6 +1,6 @@
 {{- $cfg := include "shared-agent-config.json" | fromJson -}}
 model = "gpt-6-luna"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "xhigh"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
@@ -20,6 +20,9 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/masato.nagashima/dev/snkrdunk-terraform"]
+trust_level = "trusted"
+
+[projects."/Users/masato.nagashima/dev/snkrdunk.com"]
 trust_level = "trusted"
 
 [tui]
@@ -45,3 +48,6 @@ approval_mode = "approve"
 [mcp_servers.aws-mcp]
 command = "uvx"
 args = ["mcp-proxy-for-aws@latest", "https://aws-mcp.us-east-1.api.aws/mcp", "--metadata", "INSTALL_SOURCE=aws-cli"]
+
+[plugins."github@openai-curated-remote"]
+enabled = true
