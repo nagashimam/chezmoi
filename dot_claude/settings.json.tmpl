@@ -1,16 +1,5 @@
 {{- $cfg := include "shared-agent-config.json" | fromJson -}}
 {
-  "model": "sonnet",
-  "hooks": {
-    "SessionStart": [{"matcher":"^(startup|resume|clear|compact|fork)$","hooks":[{"type":"command","command":"bash '/Users/masato.nagashima/.claude/hooks/herdr-agent-state.sh' session","timeout":10}]}]
-  },
-  "enabledPlugins": {
-    "browser-use@claude-plugins-official": true
-  },
-  "effortLevel": "xhigh",
-  "theme": "dark",
-  "switchModelsOnFlag": false,
-  "allowedDomains": {{ $cfg.safeDomains | toJson }},
   "permissions": {
     "allow": [
       {{- range $i, $cmd := $cfg.safeCommands }}
@@ -23,6 +12,76 @@
       {{- end }}
     ]
   },
+  "model": "haiku",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact|fork)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/masato.nagashima/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "browser-use@claude-plugins-official": true,
+    "datadog@claude-plugins-official": true
+  },
+  "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-sonnet-5-5": {
+      "effortLevel": "xhigh"
+    },
+    "claude-haiku-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "theme": "dark",
+  "switchModelsOnFlag": false,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(docker volume prune:*) in snkrdunk-en — CLAUDE.md flags this as DATA LOSS",
+      "Bash(aws s3 rm:*) and other aws destructive subcommands against snkrdunk-terraform or snkrdunk-en-* buckets"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: snkrdunk (GitHub org `snkrdunk`, repo `snkrdunk/snkrdunk-en`)",
+      "**Cloud provider(s)**: AWS (aws CLI used 68× in shell history; Terraform under terraform/environments/)",
+      "**Repository visibility**: Private (confirmed via gh for snkrdunk/snkrdunk-en)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: go/pkg/secretmanager/ (AWS Secrets Manager-style integration); CI secrets referenced include DEVIN_API_KEY, DOCS_AI_SECURITY_REVIEW_AWS_ROLE_ARN, GITHUB_TOKEN, NOTION_RUNBOOK_READONLY_TOKEN, PAGERDUTY_API_KEY, SLACK_DEV_GLOBAL_WEBHOOK_URL, SLACK_RELEASE_NOTE_WEBHOOK_URL, SNKRDUNK_AGENT_APP_ID, SNKRDUNK_AGENT_PRIVATE_KEY — names only, not values",
+      "**Default / protected branches**: `main` (protected; 1 ruleset also applies, name redacted — treat as additional protection beyond classic branch protection)",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: snkrdunk/snkrdunk-en (private) and its configured remote `origin` only (no additional orgs configured)",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: `snkrdunk-en-*` (config-derived — not a confirmed upload destination; uploads of local data still require confirmation); `snkrdunk-terraform` (config-derived — not a confirmed upload destination; uploads of local data still require confirmation)",
+      "**Key internal services**: SNKRDUNK.com JP service (gRPC backend dependency for product/inventory/order/auth data, per CLAUDE.md)",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: go/.env, go/.env.default, go/.env.test*, typescript/.env, go/pkg/secretmanager/ — credentials/config, not for sharing outside this repo's maintainers",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: docs/runbook/wip-rollback-prod-server.md and any namespace/host/container whose name carries `prod` or `production` as a whole word or segment",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: terraform/environments/labeled-pr/ and any other terraform scope; IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (full-stack Go/Vue feature work on SNKRDUNK-EN per CLAUDE.md)",
+      "**Trusted repo**: snkrdunk/snkrdunk-en (private) — the working checkout and its `origin` remote",
+      "**Org-specific CLIs**: gh (GitHub issue/PR workflows used extensively in skills); make (repo task runner, e.g. go-test, ts-check-all, golangci-lint); aws CLI (used 68× in shell history, likely routine under this project)",
+      "no 'routine under <user>/ prefix' qualifiers found"
+    ]
+  },
+  "allowedDomains": [
+    {{- range $i, $domain := $cfg.safeDomains }}
+    {{- if $i }},{{ end }}
+    {{ $domain | quote }}
+    {{- end }}
+  ],
   "allowedTools": [
     {{- range $i, $cmd := $cfg.safeCommands }}
     {{ printf "Bash(%s:*)" $cmd | quote }},
