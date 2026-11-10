@@ -19,6 +19,7 @@ Cache dir: `~/.agents/skills/goal-issue-morning/cache/` (call it `$CACHE`).
 - `claims/<issue-number>/`: **the only authority** for duplicate-work prevention.
   - Acquire with `mkdir "$CACHE/claims/<N>"` (no `-p`); failure means someone else holds it → skip the ticket.
   - Inside, write `meta.json`: `{goal, path, issue, github_updated_at, owner_session, hostname, pid, agent_id, started_at, expires_at, state}`. Refresh the file `heartbeat` (touch) as the liveness signal.
+- `shared/<group>.md`: shared context notes written by this skill for a group of related tickets (see step 6). Sourced facts only, never credentials; safe to delete once the group's PRs are merged.
 - `work-registry.json`: a derived, human-readable view. Regenerate it from the `claims/*/meta.json` files; never edit it as a source of truth and never use it alone to decide a ticket is free.
 
 Never store credentials or tokens in these files. If `$CACHE` is unavailable or `claims/` cannot be created, start no subagents and report the coordination problem.
@@ -41,15 +42,22 @@ Never store credentials or tokens in these files. If `$CACHE` is unavailable or 
 
 6. **Agent Team Workflow execution & Subagent brief.**
    Each subagent acts as an orchestrator executing the **`agent-team-workflow`** skill in its isolated worktree to implement the ticket and produce a draft PR.
-   Brief include: issue number/title/body summary, parent path and goal, acceptance criteria, linked PR state, and these rules:
+
+   **Shared context.** When launching 2+ tickets in the same area (same parent, or the same docs/helpers/Page Objects), write one note `$CACHE/shared/<group>.md` (about 60 lines at most) before spawning, and point every brief at it. Put in it what each agent would otherwise re-derive: the docs worth reading with paths, repo conventions and the lint/type-check/test commands, helpers or files that sibling tickets add (with branch/PR), the base-branch state, and pitfalls already observed. Every statement needs a source path or PR/issue number; no credentials. Subagents read it first, do not re-derive what it states, verify anything they depend on, and append only new, sourced findings in a short `## from #<N>` section. Update it when a base branch changes.
+
+   **Model choice.** Ticket implementation subagents inherit the default model. Purely mechanical subagents (read-only checks that PRs exist and their base/Development links, claim and registry bookkeeping, applying text you wrote verbatim) may use `model: "haiku"`. Never use it for design decisions, conflict resolution, or review.
+
+   Brief include: issue number/title/body summary, parent path and goal, acceptance criteria, linked PR state, the shared-context path (if any), and these rules:
    - Work only inside the assigned worktree, on branch `feat/<N>`, based on the repo default branch.
    - Before coding, run `gh issue develop <N> --name feat/<N>` (or, if the branch already exists, confirm it is linked) so the branch appears under the issue's **Development**.
-   - Execute the 5 phases of `agent-team-workflow` (Collect, Analyze, Define, Architect, Implement) using Herdr with Claude Code, Codex, and Antigravity CLI according to their roles:
+   - Choose the track per `agent-team-workflow` and record the choice in `task-background.md`. Use its **light track** (Steps 2-4 merged into one `plan.md`, reviewed once by Codex) when the criteria there are met: a small, low-risk diff such as a fixme audit, a comment/doc fix, or a small addition following an existing pattern. Otherwise execute the 5 phases of `agent-team-workflow` (Collect, Analyze, Define, Architect, Implement) using Herdr with Claude Code, Codex, and Antigravity CLI according to their roles:
      - **Step 1 (Collect)**: Gather ticket requirements, acceptance criteria, and linked issue/spec context (`task-background.md`). Verified by Antigravity CLI.
      - **Step 2 (Analyze)**: Formalize requirements into Given-When-Then specifications in `PRD.md` by Antigravity CLI. Reviewed by Codex (`--approve-for-me`).
      - **Step 3 (Define)**: Formulate automated/agentic/manual test specifications by Claude Code. Reviewed by Codex.
      - **Step 4 (Architect)**: Produce detailed design covering ISO/IEC 25010 quality characteristics in `system-design.md` by Claude Code. Reviewed by Codex.
      - **Step 5 (Implement & QA)**: Production and test code implementation by Claude Code. QA test execution (including dev server lifecycle & browser checks) by Antigravity CLI. Rigorous code/evidence review by Codex.
+   - Wait for Herdr workers with `herdr agent prompt ... --wait` / `herdr agent wait`, and read the result file once afterwards, as in the waiting rule of `agent-team-workflow`. Do not poll pane output or sleep-and-read in a loop; every poll re-reads your whole context.
+   - Reviewers tag each finding `[blocking]` or `[non-blocking]`. Only `[blocking]` findings cause `STATUS: FAIL` and count toward the rework cap; list `[non-blocking]` ones in the PR body. Never reclassify or waive a finding yourself; at the cap, stop `BLOCKED` and report the exact decision needed.
    - Done means: all applicable steps of `agent-team-workflow` pass (`STATUS: PASS`), acceptance criteria are met, and the repo's lint, type-check, and relevant tests pass locally. Do not claim completion otherwise.
    - Push `feat/<N>` and open a **draft** PR (`gh pr create --draft`) referencing the issue with the summary and design/test results from `agent-team-workflow`. After creating it, verify the issue's Development shows the branch/PR (e.g. `linkedBranches` via GraphQL); if not, report that.
    - Allowed: read/write code in the worktree, run local checks, spawn agents in Herdr for the workflow, push `feat/<N>`, create the draft PR. Forbidden: force-push, touching other branches, merging, marking the PR ready for review, adding dependencies or changing infra/DB/secrets/CI config unless the ticket requires it, and any change to GitHub state, labels, comments, assignees, or reviews on anything other than the assigned issue and its own PR.

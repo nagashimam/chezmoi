@@ -16,6 +16,22 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
 
 完了条件は、適用対象の全ステップがPASSし、実施できない検証と人間による確認項目が明記され、Draft PRを作成できたことです。Draft PRを作成できない場合は、理由と残作業を報告し、作業を完了扱いにしません。
 
+### 軽量版（小さな変更向け）
+
+次の条件をすべて満たすタスクでは、Step 2〜4 を1つの `plan.md` に統合する軽量版を使えます。数値は目安であり、迷う場合は通常版を使います。
+
+- 変更ファイルが3つ以下で、追加・変更行が約150行以下に収まる見込みである。
+- 新しい公開インターフェース、DBスキーマ、インフラ、権限、決済・認証の挙動を変更しない。
+- 例: テストの `fixme` の整理や根拠の追記、ドキュメント・コメント・メッセージの修正、既存パターンに沿った小さなテストの追加。
+
+軽量版の手順:
+
+- Step 1 と Step 5（実装・QA・最終監査）は通常版と同じです。
+- Step 2〜4 の代わりに、作業者 (Claude Code) が `plan.md` を1つ作成します。内容は「受入条件（Given-When-Then）」「テスト仕様（自動 / エージェント / 手動の分類つき）」「設計の要点（変更するファイルと理由、関係する ISO/IEC 25010 特性のみ）」「前提・制約・スコープ外」です。
+- レビュワー (Codex) が `plan.md` を審査し、`review-plan.md` に出力します。合否判定プロトコルと差し戻し上限は通常版と同じです。
+- Step 5 の入力は `plan.md` です。`PRD.md`、`system-design.md` などの個別ファイルは作りません。
+- 軽量版を選んだ理由と、省略したステップを `task-background.md` に記録します。作業中に条件を超えた場合（行数の超過、新しい公開インターフェースの発生など）は、通常版に切り替えて Step 2〜4 を実施します。
+
 ## ツールと操作の範囲
 
 - Herdr、Claude Code (`claude --permission-mode auto`)、Codex (`codex --approve-for-me`)、Antigravity CLI (`agy --sandbox` 起動後に Herdr で `shift+tab` を2回送信して auto モード化) は、利用可能で認証済みの場合に限り使用します。
@@ -58,6 +74,11 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
    - 初回レビューまたはQAを判定0回目とし、FAIL後の修正・再判定を最大3回行います。つまり、判定は最大4回です。
    - 3回の修正後もPASSしない場合は、該当フェーズをBlockedとして保留し、人間に報告します。
    - 各ステップのレビューFAILとStep 5のQA／コードレビューFAILに同じ上限を適用します。修正後は、該当するレビューまたはQAを必ず再実行します。
+   - **上限に数える指摘（重大度タグ）**: レビュワーとQAは、指摘ごとに `[blocking]` または `[non-blocking]` を付け、一行で理由を書きます。
+     - `[blocking]`: 実装コード、テストコード、PRに含まれる内容の変更につながる指摘。要件・期待値の誤りや漏れ、テストの未カバー、設計と実装の不整合、バグ、セキュリティ、機密情報の混入などです。
+     - `[non-blocking]`: 作業用文書の表現、件数や番号の整合、書式、追跡性の補足など、実装・テスト・PRの内容を変えない指摘です。
+   - `STATUS: FAIL` にするのは `[blocking]` が1件以上ある場合だけです。`[non-blocking]` だけの場合は `STATUS: PASS` とし、レポートの「Non-blocking findings」節に列挙します。これらは差し戻し回数に数えず、オーケストレーターも差し戻しません。最終報告とPR本文の「未対応の指摘」に、件数と内容を載せます。
+   - オーケストレーターは、レビュワーが付けた `[blocking]` を自分で `[non-blocking]` に変更したり、免除したりしません。分類に疑義がある場合は、レビュワーに再分類の根拠を求めます。上限に達した場合は、従来どおりBlockedとして人間に報告します。
 3. **合否判定プロトコルと監査ログ（Attempt退避）**:
    - 各ステップのレビュワーおよびQAは、常に最新の判定を `review-step<N>.md`（または `qa-report-step5.md`）に出力します。
    - ファイルの先頭行には `STATUS: PASS`、`STATUS: FAIL`、または人間の判断待ちの場合に限り `STATUS: BLOCKED` を明記し、指摘事項や判定理由を箇条書きで具体的に記述します。
@@ -97,6 +118,11 @@ description: "5つの開発フェーズ（Collect, Analyze, Define, Architect, I
          ```bash
          herdr agent start <agent-name> --kind claude --pane <pane-id> -- --permission-mode auto
          ```
+   - **待機ルール（トークン節約）**: ペインの出力を繰り返し読んで完了を確認しません。確認のたびに、オーケストレーターの文脈全体が再読込されるためです。
+     - 作業やレビューの依頼は `herdr agent prompt <agent-name> "<ファイルを読んで従う旨の指示>" --wait --timeout <ms>` で送り、`idle` / `done` / `blocked` になるまで1回で待ちます。長い作業では `--timeout` を長めに指定します。
+     - `timeout` になった場合は、`herdr agent get <agent-name>` で状態を1回確認し、`working` なら `herdr agent wait <agent-name>` で再度待ちます。`blocked` の場合だけ `herdr agent read` で内容を確認します。
+     - 結果は、完了後に成果物ファイル（`review-step<N>.md` の先頭行など）を1回だけ読みます。待機中に `sleep` と `pane read` を繰り返しません。
+     - 複数のペインで並行して作業できる場合は、それぞれに依頼を送ってからまとめて待ちます。
    - ステップ完了（PASS）時に該当ステップのペインをクローズし、メモリ・トークン消費とコンテキスト肥大化を防止します（成果物はファイル経由で引き継がれます）。
 6. **Gitブランチ運用**:
    - タスク開始時に専用のフィーチャーブランチ（`feature/<task-name>`）を自動作成します。
@@ -208,10 +234,14 @@ Step 5のレビューが `STATUS: PASS` に達したら、オーケストレー�
    - 詳細エビデンス: [qa-report-step5.md](./qa-report-step5.md) 参照
    - 最終コード監査: [review-step5.md](./review-step5.md) (Codex Review: PASS)
 
+   ## Open Non-blocking Findings
+   <!-- レビュー・QAの [non-blocking] 指摘の件数と内容。なければ「なし」 -->
+
    ## Manual Verification Checklist (Human QA)
    以下はマージ前または本番リリース前に人間が手動で確認すべき項目です（manual-tests.md より抽出）:
    - [ ] <手動確認項目1>
    - [ ] <手動確認項目2>
    EOF
    ```
+   軽量版では、`Requirements & Design` の PRD / System Design / Test Specs の行を、`plan.md` へのリンク1行に置き換えます。
 6. ユーザーに完了報告とPRのURLを提示して終了します。
