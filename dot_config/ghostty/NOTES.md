@@ -9,6 +9,10 @@
 - **`text:` action syntax**: confirmed on ghostty.org/docs/config/keybind —
   uses Zig string-literal escaping (e.g. `text:\x15` = Ctrl-U). `\\` is the
   correct escape for one literal backslash.
+- **`macos-option-as-alt = true`**: enables Option key to send Alt/Meta escapes
+  (`\x1b...`) to terminal applications on macOS. Without this, Option acts as a
+  macOS special character/dead-key modifier (e.g. Opt+n sends `~` dead key),
+  preventing Herdr's `prefix+alt+n` and similar shortcuts from triggering.
 - Ghostty's docs pages don't publish a full physical-key-name list inline;
   they point to the source (`key.zig`) as the source of truth. `intl_yen`
   was confirmed there, not just assumed from the earlier draft.
