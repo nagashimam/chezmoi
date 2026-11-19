@@ -3,3 +3,4 @@
 {{- range $cmd := $cfg.safeCommands }}
 prefix_rule(pattern={{ regexSplit "\\s+" $cmd -1 | toJson }}, decision="allow")
 {{- end }}
+prefix_rule(pattern=["git", "merge", "--no-ff", "--no-edit", "origin/pr-13538"], decision="allow")
